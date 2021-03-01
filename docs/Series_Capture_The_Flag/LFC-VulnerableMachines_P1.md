@@ -156,6 +156,8 @@ Now instead of running `-p-` we can just do port scan on particular ports.
 
 and scan your will be much faster.
 
+Note: You should not go above 1000pps with masscan, as it can miss ports. If masscan is missing ports lower down your scan rate to 300-400 and try again.
+
 ### Netcat
 
 Netcat might not be the best tool to use for port scanning, but it can be used quickly. While Netcat scans TCP ports by default it can perform UDP scans as well.
