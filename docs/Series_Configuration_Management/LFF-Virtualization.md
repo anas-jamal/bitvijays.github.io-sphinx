@@ -1,115 +1,71 @@
 # HomeLab-Notes
 
-## OpenWrt
-
-Let's say that you have a router running OpenWrt, however it requires MAC Spoofing. One of the way to do it is by logging into it and performing
-
-```shell
-
- root@OpenWrt:~# ifconfig eth1 down
- root@OpenWrt:~# ifconfig eth1 hw ether XX:XX:XX:XX:XX:XX
- root@OpenWrt:~# ifconfig eth1 up
- root@OpenWrt:~# ifconfig eth1
-```
-
-However, this would be temporary. If we want the MAC address to be set when system boots up, we can use [init scripts](https://openwrt.org/docs/techref/initscripts)
-
-Edit `/etc/init.d/clonemac`
-
-```bash
- START=94
- STOP=15
-
- start() {
-     ifconfig eth1 down
-     ifconfig eth1 hw ether XX:XX:XX:XX:XX:XX
-     ifconfig eth1 up
- }
-
- stop() {
-     echo "Stop."
- }
-```
-
-Make the script executable, then we can change the MAC address simply by this:
-
-```shell
-
- root@OpenWrt:~# /etc/init.d/clonemac start
-```
-
-To execute the script automatically on system boot, we need to enable it:
-
-```shell
- root@OpenWrt:~# /etc/init.d/clonemac enable
-```
-
-This will create a symbolic link to the clonemac script in /etc/rc.d. Reboot the router and you will find the new MAC address be automatically used.
+We want to create a HomeLab/server running on minimum Virtualization. We can either use KVM Virtualisation or OpenStack Lab (All in One).
 
 ## KVM Virtualisation
 
-- Install Debian Minimal : No GUI?
-- [Install KVM](https://wiki.debian.org/KVM#Installation)
-- [Set IPTables DROP everything on INPUT, allow SSH](https://upcloud.com/community/tutorials/configure-iptables-debian/)
+### Install Debian
 
-- [Install OpenvSwitch](https://docs.openvswitch.org/en/latest/intro/install/distributions/#debian)
+Install [Debian from minimal CD](https://www.debian.org/CD/netinst/)
 
-- Setup a very basic network using [KVM OpenvSwitch](http://docs.openvswitch.org/en/latest/howto/kvm/). Here We are creating a bridge br0 and then adding the ethernet port to the bridge. Basically, the interface would get a DHCP ip ?? -- This would probably break your network as we would add eth0/ethernet interface to the br0 and routing has to be routed via br0. change default gw etc.
-- So, flush the IP of the ethernet device by
+### Install KVM
 
-  ```shell
-  ip addr flush dev eth0
-  ```
+Refer [KVM Installation](https://wiki.debian.org/KVM#Installation)
 
-  And also flush all the routes
-  
-  ```shell
-  ip route flush all ( it would remove all the routes) --!!
-  ```
+Check your connectivity with
 
-  Now, we can do
-
-  ```shell
-  dhclient br0
-  ```
-
-  to get the ip address and add the default gateway !
-
-or we can do it like
-
-https://forum.netgate.com/topic/122148/installing-pfsense-on-kvm-with-openvswitch-a-somewhat-complete-guide
-
-Edit /etc/network/interfaces
-
-```shell
- source /etc/network/interfaces.d/*
-
- # The loopback network interface
- auto lo
- iface lo inet loopback
-
- # The primary network interface
- auto ens3
- iface ens3 inet manual
-
- auto OVSBridge
- iface OVSBridge inet static
- address 192.168.122.150
- netmask 255.255.255.0
- gateway 192.168.122.1
-
- dns-nameservers 8.8.8.8
+```console
+virsh --connect qemu:///session version
+Compiled against library: libvirt 5.0.0
+Using library: libvirt 5.0.0
+Using API: QEMU 5.0.0
+Running hypervisor: QEMU 3.1.0
 ```
 
-and
+### Basic Network
 
-```shell
- sudo ovs-vsctl add-port OVSBridge <physical interface=""> tag=100 trunk=200 && sudo reboot now</physical>
+We would explore creating the network using
+
+- OpenvSwitch
+- Bridge Networking
+
+#### OpenvSwitch
+
+We would use OpenvSwitch for creating a network bridge or a virtual switch.
+
+##### Install OpenvSwitch
+
+Refer [Install OpenvSwitch for Debian](https://docs.openvswitch.org/en/latest/intro/install/distributions/#debian)
+
+##### Setup Basic Network
+
+Once, we have installed `OpenvSwitch`, setup a very basic network using [KVM OpenvSwitch](http://docs.openvswitch.org/en/latest/howto/kvm/)
+
+Mainly, create a bridge named br0 with the following command:
+
+```console
+ovs-vsctl add-br br0
 ```
 
-This will add the port to the OVS, and you will lose all connectivity. This will also reboot the server. After reboot, it should come back with the IP above. If it doesn't, grab a keyboard, plug it in the server and try to figure out why…
+and then add a port to the bridge for the NIC that you want your guests to communicate over (e.g. eth0)
 
-### Virsh
+```console
+ovs-vsctl add-port br0 eth0
+```
+
+##### Edit libvirt VM XML file
+
+Edit the VM XML file using [Open vSwitch with Libvirt](https://docs.openvswitch.org/en/latest/howto/libvirt/)
+
+### Virtual Machine Creation
+
+#### Using Terraform
+
+If you get error `could not find capabilities for domaintype=kvm`, Ensure that your user is added to kvm
+
+We can use [Terraform Configuration for Creating VM on KVM Virtualisation](https://github.com/bitvijays/terraform-example)
+
+#### Using Virsh
 
 virt-install is a command line tool for creating new KVM , Xen, or Linux container guests using the "libvirt" hypervisor management library.
 
@@ -470,3 +426,106 @@ Bolt is an open-source remote task runner; connects directly to remote nodes wit
  Display:
          --format FORMAT              Output format to use: human or json
 ```
+
+## OpenWrt
+
+Let's say that you have a router running OpenWrt, however it requires MAC Spoofing. One of the way to do it is by logging into it and performing
+
+```shell
+
+ root@OpenWrt:~# ifconfig eth1 down
+ root@OpenWrt:~# ifconfig eth1 hw ether XX:XX:XX:XX:XX:XX
+ root@OpenWrt:~# ifconfig eth1 up
+ root@OpenWrt:~# ifconfig eth1
+```
+
+However, this would be temporary. If we want the MAC address to be set when system boots up, we can use [init scripts](https://openwrt.org/docs/techref/initscripts)
+
+Edit `/etc/init.d/clonemac`
+
+```bash
+ START=94
+ STOP=15
+
+ start() {
+     ifconfig eth1 down
+     ifconfig eth1 hw ether XX:XX:XX:XX:XX:XX
+     ifconfig eth1 up
+ }
+
+ stop() {
+     echo "Stop."
+ }
+```
+
+Make the script executable, then we can change the MAC address simply by this:
+
+```shell
+
+ root@OpenWrt:~# /etc/init.d/clonemac start
+```
+
+To execute the script automatically on system boot, we need to enable it:
+
+```shell
+ root@OpenWrt:~# /etc/init.d/clonemac enable
+```
+
+This will create a symbolic link to the clonemac script in /etc/rc.d. Reboot the router and you will find the new MAC address be automatically used.
+
+## Dump
+
+Here We are creating a bridge br0 and then adding the ethernet port to the bridge. Basically, the interface would get a DHCP ip ?? -- This would probably break your network as we would add eth0/ethernet interface to the br0 and routing has to be routed via br0. change default gw etc.
+- So, flush the IP of the ethernet device by
+
+  ```shell
+  ip addr flush dev eth0
+  ```
+
+  And also flush all the routes
+  
+  ```shell
+  ip route flush all ( it would remove all the routes) --!!
+  ```
+
+  Now, we can do
+
+  ```shell
+  dhclient br0
+  ```
+
+  to get the ip address and add the default gateway !
+
+or we can do it like
+
+https://forum.netgate.com/topic/122148/installing-pfsense-on-kvm-with-openvswitch-a-somewhat-complete-guide
+
+Edit /etc/network/interfaces
+
+```shell
+ source /etc/network/interfaces.d/*
+
+ # The loopback network interface
+ auto lo
+ iface lo inet loopback
+
+ # The primary network interface
+ auto ens3
+ iface ens3 inet manual
+
+ auto OVSBridge
+ iface OVSBridge inet static
+ address 192.168.122.150
+ netmask 255.255.255.0
+ gateway 192.168.122.1
+
+ dns-nameservers 8.8.8.8
+```
+
+and
+
+```shell
+ sudo ovs-vsctl add-port OVSBridge <physical interface=""> tag=100 trunk=200 && sudo reboot now</physical>
+```
+
+This will add the port to the OVS, and you will lose all connectivity. This will also reboot the server. After reboot, it should come back with the IP above. If it doesn't, grab a keyboard, plug it in the server and try to figure out why…
