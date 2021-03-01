@@ -775,3 +775,34 @@ follows:
 ---
 
 > You can parse shell bag keys using [TZworks Sbag.exe](https://tzworks.net/prototype_page.php?proto_id=14)
+
+## Prefetch
+
+> * Windows Prefetch files, introduced in Windows XP, are designed to speed up the application startup process. Prefetch files contain the name of the executable, a Unicode list of DLLs used by that executable
+> * The feature is also found in Windows Vista, where it has been augmented with SuperFetch, ReadyBoot, and ReadyBoost.
+
+* **SuperFetch** : analyzes per-machine usage patterns over time and optimizes the data that is kept in memory.
+* **ReadyBoot** : decreases boot time (the time from turning power on to reaching the log-on screen) by preloading the files and startup programs needed per-machine into a cache.
+* **ReadyBoost** : supports the use of flash storage devices like Universal Serial Bus (USB) flash drives and Secure Digital (SD) flash cards to boost PC performance.
+
+```
+The Prefetch files are stored in the directory:
+
+%SystemRoot%\Prefetch
+
+Use Win + R and type prefatch that is also lead you to the prefatch directory 
+
+The following files can be found in the Prefetch directory:
+
+*.pf, which are Prefetch files;
+Ag*.db and Ag*.db.trx, which are SuperFetch files;
+Layout.ini;
+PfPre_*.db;
+PfSvPerfStats.bin
+```
+
+> To see the prefatchfile contents use below command
+
+```css 
+PECmd.exe -f "Your_File_Name.pf" 
+```
