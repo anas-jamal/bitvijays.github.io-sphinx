@@ -95,6 +95,15 @@ OUTPUT:
 MISC: -6: Enable IPv6 scanning -A: Enable OS detection, version detection,script scanning, and traceroute
 ```
 
+Common Command:
+
+`nmap -sC -sV -oA nmap/initial 10.0.0.1`
+
+- -sC specifies default scripts
+- -sV probes each port for services
+- -oA outputs to all major file types
+- nmap/initial specifies the directory in which to output the scan
+
 ### Unicornscan
 
 A port scanner that utilizes its own userland TCP/IP stack, which allows it to run asynchronous scans. It can scan 65,535 ports in a relatively short time frame.
@@ -111,6 +120,43 @@ unicornscan [options] X.X.X.X/YY:S-E
 
     example: unicornscan 192.168.1.5:1-4000 gateway:a would scan port 1 - 4000 for 192.168.1.5 and all 65K ports for the host named gateway.
 ```
+
+### RustScan
+
+[Rustscan](https://github.com/RustScan/RustScan) is a open source tool and very fast tool for port scanning. visit it's github repository and there's a full tutorial for installing and using it.
+
+[Usage Guide](https://github.com/RustScan/RustScan/wiki/Usage)
+
+[Things you may want to do with RustScan but don't understand how](https://github.com/RustScan/RustScan/wiki/Things-you-may-want-to-do-with-RustScan-but-don't-understand-how)
+
+Common Command:
+`rustscan -a 10.0.0.1`
+
+Note: You need nmap installed on your system for running rustscan.
+
+### Fast Port Scan Tip
+
+`-p-` option in nmap scans all the ports of the target but it takes ages.
+
+Using masscan, you can scan all TCP and UDP ports in roughly some minutes.
+
+`masscan -p1-65535,U:1-65535 10.0.0.1 --rate=1000 -e tun0`
+
+- -p1-65535,U:1-65535: tells masscan to scan all TCP/UDP ports.
+
+- --rate=1000: scan rate = 1000 packets per second.
+
+- -e tun0 tells masscan to listen on the VPN network interface for responses.
+
+After getting all the ports you can run nmap on them. For example we got port 22,80,3000,5984 from `masscan`
+
+Now instead of running `-p-` we can just do port scan on particular ports.
+
+`nmap -sC -sV -p 22,80,3000,5984 -oA nmap/initial 10.0.0.1`
+
+and scan your will be much faster.
+
+Note: You should not go above 1000pps with masscan, as it can miss ports. If masscan is missing ports lower down your scan rate to 300-400 and try again.
 
 ### Netcat
 
@@ -212,7 +258,7 @@ Usually, DNS runs on UDP Port. However, If DNS is running on TCP port, probably 
 
 ### SSL Certificate
 
-If the targeted machine is running an https server and we are getting an apache default webpage on hitting the https://IPAddress, virtual hosts would be probably in use. Check the alt-dns-name on the ssl-certificate, create an entry in hosts file (/etc/hosts) and check what is being hosted on these domain names by surfing to https://alt-dns-name.
+If the targeted machine is running an https server and we are getting an apache default webpage on hitting the <https://IPAddress>, virtual hosts would be probably in use. Check the alt-dns-name on the ssl-certificate, create an entry in hosts file (/etc/hosts) and check what is being hosted on these domain names by surfing to <https://alt-dns-name>.
 
 nmap service scan result for port 443 (sample)
 
