@@ -91,6 +91,10 @@ Furthermore, we can run the following programs to find any hidden directories.
 - [Dirbuster](https://www.owasp.org/index.php/Category:OWASP_DirBuster_Project) : DirBuster is a multi threaded java application designed to brute force directories and files names on web/ application servers.
 - [gobuster](https://github.com/OJ/gobuster) : Gobuster is a tool used to brute-force URIs (directories and files) in web sites and DNS subdomains (with wildcard support). (golang can be installed using apt-get).
 
+- [dirsearch](https://github.com/maurosoria/dirsearch) : Dirsearch is a command-line tool designed to brute force directories and files in webservers.
+
+- [ffuf](https://github.com/ffuf/ffuf) : ffuf is a great tool used for fuzzing. Ffuf is used for fuzzing Get and Post data but can also be used for finding hidden files, directories or subdomains
+
 Tip
 
 Most likely, we will be using common.txt (/usr/share/wordlists/dirb/) . If it's doesn't find anything, it's better to double check with /usr/share/dirbuster/wordlists/directory-list-2.3-medium.txt which is a list of directories that where found on at least 2 different hosts when DirBuster project crawled the internet. Even if that doesn't work out, try searching with extensions such as .txt, .js, .html, .php. (.txt by default and rest application based)
